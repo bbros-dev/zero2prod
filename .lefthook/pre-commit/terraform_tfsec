@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+# SPDX-FileCopyrightText: (c) 2017 Anton Babenko
+# SPDX-FileCopyrightText: (c) 2020 Begley Brothers Inc. <BegleyBrothers@gmail.com>
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+
+if [[ ${DEBUG-} =~ ^1|y|yes|true$ ]]; then
+  # Take stdout and stderr from this script. 
+  # Redirect to the logger command, which sends to syslog.
+  # Adding `-s` echoes to stderr - however profile is run by non-interactive
+  # terminals and any noise from them breaks sftp and scp.
+  # See OpenSSH FAQ note below.
+  # So when debugging we actually want to log lots but be 'silent' wrt to the
+  # terminal.
+  exec 1> >(logger -t $(basename $0)) 2>&1
+  set -o xtrace       # Trace the execution of the script (debug)
+fi
+set -o errexit
+set -o pipefail
+
+declare -a paths
+declare -a tfvars_files
+
+index=0
+tfvidx=0
+
+main() {
+  initialize_
+  # Turn off exit-on-error because ...
+  set +o errexit
+  # ... the `ls` command errors when the changeset is only deleted files.
+  staged_files=($(git diff-index --cached --name-only HEAD | xargs ls -1 2>/dev/null))
+  set -o errexit
+  parse_cmdline_ "$@ ${staged_files[@]}"
+
+  # propagate $FILES to custom function
+  tfsec_ "$ARGS" "$FILES"
+}
+
+tfsec_() {
+  # consume modified files passed from pre-commit so that
+  # tfsec runs against only those relevant directories
+  for file_with_path in $FILES; do
+    file_with_path="${file_with_path// /__REPLACED__SPACE__}"
+    if [ ${file_with_path: -3} == ".tf" ]
+    then
+      paths[index]=$(dirname "$file_with_path")
+    elif [ ${file_with_path: -7} == ".tfvars" ]
+    then
+      tfvars_files[tfvidx]=$(dirname "$file_with_path")
+      let "tfvidx+=1"
+    fi
+    let "index+=1"
+  done
+
+  # Run only on the files we need to: `terraform fmt --tfvars-file <file>`
+  for tfv_files in "${tfvars_files[@]}"; do
+    tfv_file="${tfv_file//__REPLACED__SPACE__/ }"
+    tfsec --no-color --format json --tfvars-file "$tfv_file"
+  done
+
+  for path_uniq in $(echo "${paths[*]}" | tr ' ' '\n' | sort -u); do
+    path_uniq="${path_uniq//__REPLACED__SPACE__/ }"
+    pushd "$path_uniq" > /dev/null
+      echo $ARGS
+      tfsec --no-color --format json $ARGS
+    popd > /dev/null
+  done
+}
+
+initialize_() {
+  # get directory containing this script
+  local dir
+  local source
+  source="${BASH_SOURCE[0]}"
+  while [[ -L $source ]]; do # resolve $source until the file is no longer a symlink
+    dir="$(cd -P "$(dirname "$source")" > /dev/null && pwd)"
+    source="$(readlink "$source")"
+    # if $source was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    [[ $source != /* ]] && source="$dir/$source"
+  done
+  _SCRIPT_DIR="$(dirname "$source")"
+
+  # source getopt function
+  # shellcheck source=lib_getopt
+  . "$_SCRIPT_DIR/../scripts/lib_getopt"
+}
+
+parse_cmdline_() {
+  declare argv
+  argv=$(getopt -o a: --long args: -- "$@") || return
+  eval "set -- $argv"
+
+  for argv; do
+    case $argv in
+      -a | --args)
+        shift
+        ARGS+=("$1")
+        shift
+        ;;
+      --)
+        shift
+        FILES+=("$@")
+        break
+        ;;
+    esac
+  done
+}
+
+# global arrays
+declare -a ARGS=()
+declare -a FILES=()
+
+[[ ${BASH_SOURCE[0]} != "$0" ]] || main "$@"

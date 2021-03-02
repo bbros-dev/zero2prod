@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# SPDX-FileCopyrightText: (c) 2020 Begley Brothers Inc. <BegleyBrothers@gmail.com>
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+
+if [[ ${DEBUG-} =~ ^1|y|yes|true$ ]]; then
+  # Take stdout and stderr from this script. 
+  # Redirect to the logger command, which sends to syslog.
+  # Adding `-s` echoes to stderr - however profile is run by non-interactive
+  # terminals and any noise from them breaks sftp and scp.
+  # See OpenSSH FAQ note below.
+  # So when debugging we actually want to log lots but be 'silent' wrt to the
+  # terminal.
+  exec 1> >(logger -t $(basename $0)) 2>&1
+  set -o xtrace       # Trace the execution of the script (debug)
+fi
+set -o errexit
+
+declare -a paths
+declare -a chef_files
+
+index=0
+rbidx=0
+
+# Turn off exit-on-error because...
+set +o errexit
+# ... the `ls` command errors when the changeset is only deleted files.
+staged_files=($(git diff-index --cached --name-only HEAD | xargs ls -1 2>/dev/null)) || true
+set -o errexit
+
+for file_with_path in "${staged_files[@]}"; do
+  file_with_path="${file_with_path// /__REPLACED__SPACE__}"
+
+  paths[index]=$(dirname "$file_with_path")
+
+  if [ ${file_with_path: -3} == ".rb" ]
+  then
+    chef_files+=("$file_with_path")
+    let "rbidx+=1"
+  fi
+
+  let "index+=1"
+done
+
+## Auto-Correct Whole Cookbook
+#
+for path_uniq in $(echo "${paths[*]}" | tr ' ' '\n' | sort -u); do
+  path_uniq="${path_uniq//__REPLACED__SPACE__/ }"
+  if echo "$path_uniq" | grep cookbooks
+  then
+    pushd "$path_uniq" > /dev/null
+      cookstyle -a "$path_uniq"
+      # Suspend until able to process cookbook folders only.
+      # chef exec foodcritic "$path_uniq"
+    popd > /dev/null
+  fi
+done
+
+# Run only on the files we need to: `terraform fmt <file>`
+# for rb_file in "${chef_files[@]}"; do
+#   rb_file="${rb_file//__REPLACED__SPACE__/ }"
+#   chef exec foodcritic "$rb_file"
+# done
