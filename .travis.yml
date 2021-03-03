@@ -1,21 +1,38 @@
 language: rust
+# tarpaulin has only been tested on bionic and trusty
+# other distros may have issues.
+dist: bionic
+addons:
+  apt:
+    packages:
+      - libssl-dev
 cache: cargo
 rust:
   - stable
-before_cache: |
-  cargo install cargo-tarpaulin
-before_script:
-  - rustup component add rustfmt
-  - rustup component add clippy
-  - cargo install cargo-audit
+matrix:
+  allow_failures:
+    - rust: nightly
+# Tarpaulin is installed in before_cache to allow it to be
+# cached and not install on every Travis run
+before_script: |
+  if [[ "$TRAVIS_RUST_VERSION" == stable ]]; then
+    # cargo install cargo-tarpaulin
+    bash <(curl https://raw.githubusercontent.com/xd009642/tarpaulin/master/travis-install.sh)
+  fi
 # As a result of https://github.com/travis-ci/travis-ci/issues/1066, we run
 # everything in one large command instead of multiple commands.
 # In this way, the build stops immediately if one of the commands fails.
 script: |
-  cargo fmt --all -- --check &&
-  cargo clippy -- -D warnings &&
+  cargo clean && 
   cargo build &&
-  cargo test &&
-  cargo audit
+  cargo test
 after_success: |
-  cargo tarpaulin --ignore-tests
+  if [[ "$TRAVIS_RUST_VERSION" == stable ]]; then
+    # Create and upload a report for coveralls.io
+    cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
+
+    # Create and upload a report for codecov.io
+    # ensure CODECOV_TOKEN is exported.
+    cargo tarpaulin --out Xml
+    bash <(curl -s https://codecov.io/bash)
+  fi

@@ -1,6 +1,9 @@
 # Zero-2-production
 
-Zero 2 Production: Text project
+Zero 2 Production: Newsletter project
+
+
+[![codecov](https://codecov.io/gh/bbros-dev/zero2prod/branch/main/graph/badge.svg?token=Z6OG67ZIVZ)](https://codecov.io/gh/bbros-dev/zero2prod)
 
 ## Git Hooks
 
@@ -12,7 +15,7 @@ To setup git hooks once all lefthook scripts are in place:
 
 ## Quality and Standards
 
-### Coverage
+### Code Coverage
 
 We use [`tarpaulin`](https://github.com/xd009642/tarpaulin#travis-ci-and-coverage-sites).
 
