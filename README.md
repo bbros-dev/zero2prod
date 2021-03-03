@@ -2,8 +2,9 @@
 
 Zero 2 Production: Newsletter project
 
+[![Build Status](https://travis-ci.com/bbros-dev/zero2prod.svg?branch=main)](https://travis-ci.com/bbros-dev/zero2prod)
 
-[![codecov](https://codecov.io/gh/bbros-dev/zero2prod/branch/main/graph/badge.svg?token=Z6OG67ZIVZ)](https://codecov.io/gh/bbros-dev/zero2prod)
+[![codecov](https://codecov.io/gh/bbros-dev/zero2prod/branch/main/graph/badge.svg?token=Z6OG67ZIVZ)](https://codecov.io/gh/bbros-dev/zero2prod) [![Coverage Status](https://coveralls.io/repos/github/bbros-dev/zero2prod/badge.svg?branch=main)](https://coveralls.io/github/bbros-dev/zero2prod?branch=main)
 
 ## Git Hooks
 
