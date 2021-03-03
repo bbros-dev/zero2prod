@@ -44,7 +44,7 @@ To ensure consistent formatting, fail on unformatted code:
 
     cargo fmt -- --check
 
-### Security Vulnerabilities
+### Security
 
 #### Cargo Audit
 
