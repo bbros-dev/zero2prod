@@ -8,3 +8,12 @@ edition = "2018"
 # https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
+[[test]]
+name = "cucumber"
+harness = false # Allows Cucumber to print output instead of libtest
+
+[dev-dependencies]
+cucumber = { package = "cucumber_rust", version = "0.8.3", features = ["macros"] }
+# You can use any executor, we use Tokio in this example.
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
