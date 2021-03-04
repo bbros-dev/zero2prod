@@ -1,4 +1,8 @@
-use actix_web::{web, App, HttpRequest, HttpServer, Responder};
+use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
+
+async fn health_check(req: HttpRequest) -> impl Responder {
+    HttpResponse::Ok().finish()
+}
 
 async fn greet(req: HttpRequest) -> impl Responder {
     let name = req.match_info().get("name").unwrap_or("World");

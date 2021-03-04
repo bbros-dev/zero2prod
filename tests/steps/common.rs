@@ -29,3 +29,9 @@ impl World for MyWorld {
         })
     }
 }
+
+#[given("the sign-up service is monitored")]
+async fn activate_monitor(world: &mut MyWorld) {
+    world.foo = "monitor".into();
+    world.test_async_fn().await;
+}
