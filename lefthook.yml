@@ -6,7 +6,7 @@ pre-push:
   commands:
     cargo-audit:
       tags: backend security
-      run: cargo audit
+      run: cargo audit || true
     cargo-deny:
       tags: backend security
       run: cargo deny check
