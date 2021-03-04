@@ -8,6 +8,9 @@ edition = "2018"
 # https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# We are using the latest beta release of actix-web
+# that relies on tokio 1.x.x
+actix-web = "=4.0.0-beta.3"
 
 [[test]]
 name = "cucumber"
