@@ -6,6 +6,11 @@ Zero 2 Production: Newsletter project
 
 [![codecov](https://codecov.io/gh/bbros-dev/zero2prod/branch/main/graph/badge.svg?token=Z6OG67ZIVZ)](https://codecov.io/gh/bbros-dev/zero2prod) [![Coverage Status](https://coveralls.io/repos/github/bbros-dev/zero2prod/badge.svg?branch=main)](https://coveralls.io/github/bbros-dev/zero2prod?branch=main)
 
+## Utilities
+
+    cargo install cargo-edit
+    cargo install cargo-expand
+
 ## Git Hooks
 
 To setup git hooks once all lefthook scripts are in place:
@@ -25,13 +30,13 @@ We use [`tarpaulin`](https://github.com/xd009642/tarpaulin#travis-ci-and-coverag
 
 ### Linting
 
-The `clippy` tool is builtin to the rustup `default` profile, but NOT the
+The `clippy` tool is part of the rustup `default` profile, but NOT the
 `minimal` profile. Some CI environments use the minimal profile, if so:
 
     rustup component add clippy
 
 This is a no-op when `clippy` is present.
-To fail lint checking on any warning:
+To fail lint checking on warnings:
 
     cargo clippy -- -D warnings
 

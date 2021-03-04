@@ -14,6 +14,8 @@ name = "cucumber"
 harness = false # Allows Cucumber to print output instead of libtest
 
 [dev-dependencies]
-cucumber = { package = "cucumber_rust", version = "0.8.3", features = ["macros"] }
+cargo-edit = "0.7.0"
+cargo-expand = "1.0.5"
+cucumber_rust = { package = "cucumber_rust", version = "0.8.3", features = ["macros"] }
 # You can use any executor, we use Tokio in this example.
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
