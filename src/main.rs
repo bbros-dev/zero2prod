@@ -1,7 +1,14 @@
-use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
+use actix_web::{App, HttpRequest, HttpResponse, HttpServer, Responder, test, web};
 
-async fn health_check(req: HttpRequest) -> impl Responder {
+async fn health_check(_req: HttpRequest) -> HttpResponse {
     HttpResponse::Ok().finish()
+}
+
+#[test]
+fn test_health_check() {
+    let req = test::TestRequest::default().to_http_request();
+    let resp = health_check(req).await.unwrap();
+    assert_eq!(resp.status(), StatusCode::OK);
 }
 
 async fn greet(req: HttpRequest) -> impl Responder {
