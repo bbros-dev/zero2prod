@@ -2,8 +2,6 @@ mod steps;
 
 use cucumber_rust::{async_trait, given, then, when, World, WorldInit};
 
-use zero2prod::run;
-
 use crate::steps::common::MyWorld;
 
 #[when(regex = "something goes (.*)")]

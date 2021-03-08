@@ -1,6 +1,6 @@
 use std::{cell::RefCell, convert::Infallible};
 
-use cucumber_rust::{async_trait, given, then, when, World, WorldInit};
+use cucumber_rust::{async_trait, given, when, World, WorldInit};
 
 #[derive(WorldInit)]
 pub struct MyWorld {
@@ -40,8 +40,9 @@ async fn activate_monitor(world: &mut MyWorld) {
 //
 #[when("the sign-up service is healthy")]
 async fn signup_service_healthy(world: &mut MyWorld) {
-    // Launch the health check as a background task
-    spawn_app();
+    // Launch the health check as a background task.
+    // No .await, no .expect
+    spawn_app().await;
     // We need to bring in `reqwest`
     // to perform HTTP requests against our application.
     //
@@ -50,7 +51,7 @@ async fn signup_service_healthy(world: &mut MyWorld) {
     let client = reqwest::Client::new();
     // Act
     let response = client
-        .get("http://127.0.0.1:8000/health_check")
+        .get("http://localhost:8000/health_check")
         .send()
         .await
         .expect("Failed to execute request.");
@@ -65,9 +66,10 @@ async fn signup_service_healthy(world: &mut MyWorld) {
 // We are also running tests, so it is not worth it to propagate errors:
 // if we fail to perform the required setup we can just panic and crash
 // all the things.
-// 
-async fn spawn_app() -> std::io::Result<()> {
-    let server = zero2prod::run();
+//
+async fn spawn_app() {
+    let server = zero2prod::run().expect("Failed to bind address");
+
     // Launch the server as a background task
     // tokio::spawn returns a handle to the spawned future,
     // but we have no use for it here, hence the non-binding let
