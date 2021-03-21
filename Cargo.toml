@@ -25,6 +25,11 @@ name = "zero2prod"
 # We are using the latest beta release of actix-web
 # that relies on tokio 1.x.x
 actix-web = "=4.0.0-beta.3"
+# We need the optional `derive` feature to use `serde`'s procedural macros:
+# `#[derive(Serialize)]` and `#[derive(Deserialize)]`.
+# The feature is not enabled by default to avoid pulling in
+# unnecessary dependencies for projects that do not need it.
+serde = { version = "1", features = ["derive"]}
 
 [[test]]
 name = "cucumber"
